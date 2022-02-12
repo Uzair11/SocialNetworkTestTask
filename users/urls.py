@@ -37,4 +37,5 @@ urlpatterns = [
     path('api/me/', UserRegisterViewSet.as_view({'get': 'get_user_profile'}), name='get_user_profile'),
     path('api/like_post/', LikesPostViewSet.as_view({'post': 'like_post'}), name='like_post'),
     path('api/unlike_post/', LikesPostViewSet.as_view({'delete': 'unlike_post'}), name='unlike_post'),
+    path('api/user_post/', LikesPostViewSet.as_view({'get': 'user_posts'}), name='user_posts'),
 ] +router.urls

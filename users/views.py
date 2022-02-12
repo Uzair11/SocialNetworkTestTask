@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from users.serializers import UserSerializer, UserRegisterSerializer, PostSerializer, PostLikeSerializer
+from users.serializers import UserSerializer, UserRegisterSerializer, PostSerializer, PostLikeSerializer, UserPostSerializer
 from django.contrib.auth import login, logout, authenticate
 from rest_framework import exceptions
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -21,6 +21,7 @@ from users.permissions import AccessPermission
 import operator
 import json
 from django.db.models import Count
+from rest_framework.renderers import JSONRenderer
 
 
 UserModel = get_user_model()
@@ -143,6 +144,8 @@ class LikesPostViewSet(viewsets.ViewSet):
     def like_post(self, request):
         serializer = PostLikeSerializer(data=request.data)
         if serializer.is_valid():
+            if Post.objects.filter(id=serializer.validated_data['post_liked'].id, posted_by=request.user).exists():
+                return Response(data='You cannot like your own post', status=status.HTTP_400_BAD_REQUEST)
             if PostLike.objects.filter(user_who_liked=request.user, post_liked=serializer.validated_data['post_liked']).exists():
                 return Response(data='Already Liked', status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -166,3 +169,13 @@ class LikesPostViewSet(viewsets.ViewSet):
                 return Response(data='Like not exists', status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        method="get",
+    )
+    @action(detail=False, methods=["get"], )
+    def user_posts(self, request):
+        queryset = UserModel.objects.all().annotate(num_of_posts=Count('post_by')).order_by('-num_of_posts').values('id', 'email', 'first_name', 'last_name', 'username', 'num_of_posts')
+        context = UserPostSerializer(queryset, many=True)
+        print(context.data)
+        return Response(data=context.data, status=status.HTTP_200_OK)
