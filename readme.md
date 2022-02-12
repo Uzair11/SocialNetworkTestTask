@@ -1,7 +1,7 @@
-start the server locally, run:
+Start the server locally, run:
     - docker-compose up
 
-for manage.py:
+For manage.py:
 docker-compose run testtasksocial python manage.py <command>
 
 For unittest:
