@@ -79,7 +79,7 @@ class UserRegisterViewSet(viewsets.ViewSet):
         user.set_password(ser.validated_data['password'])
         user.save()
 
-        return Response(status=200, data=UserSerializer(user).data)
+        return Response(status=201, data=UserSerializer(user).data)
 
 
     @swagger_auto_schema(
